@@ -25,10 +25,43 @@ export default function App() {
     messages: []
   });
 
+  const {
+    recording,
+    speaking,
+    transcribing,
+    transcript,
+    pauseRecording,
+    startRecording,
+    stopRecording
+  } = useWhisper({
+    apiKey: process.env.OPENAI_API_KEY,
+    streaming: true,
+    timeSlice: 500, // 500ms intervals
+    removeSilence: true, // remove silence
+    nonStop: true, // keep recording as long as user is speaking
+    stopTimeout: 3000, // auto stop after 3 seconds
+    whisperConfig: {
+      language: 'en'
+    }
+  });
+
+  const turnOnMicrophone = () => {
+    setPromptInput('');
+    startRecording();
+  }
+
+  useEffect(() => {
+    if (transcript.text) {
+      setPromptInput(transcript.text || '');
+    }
+  }, [transcript.text]);
+
   const { messages } = messageState;
 
   const handlePromptInputSubmit = async (e: any) => {
     e.preventDefault();
+
+    stopRecording();
 
     if (!promptInput) {
       return;
@@ -114,35 +147,6 @@ export default function App() {
     // @ts-ignore
     bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [messageState]);
-
-  const {
-    recording,
-    speaking,
-    transcribing,
-    transcript,
-    pauseRecording,
-    startRecording,
-    stopRecording
-  } = useWhisper({
-    apiKey: process.env.OPENAI_API_KEY,
-    streaming: true,
-    timeSlice: 500, // 500ms intervals
-    removeSilence: true, // remove silence
-    nonStop: true, // keep recording as long as user is speaking
-    stopTimeout: 3000, // auto stop after 3 seconds
-    whisperConfig: {
-      language: 'en'
-    }
-  });
-
-  const turnOnMicrophone = () => {
-    setPromptInput('');
-    startRecording();
-  }
-
-  useEffect(() => {
-    setPromptInput(transcript.text || '');
-  }, [transcript.text]);
 
   return (
     <MantineProvider
