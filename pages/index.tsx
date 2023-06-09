@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { MantineProvider, Text, Container, Card, Flex, Textarea, ScrollArea, ActionIcon, Notification, LoadingOverlay, Loader } from '@mantine/core';
 import { useFocusTrap } from '@mantine/hooks';
-import { IconSend, IconMoodSmile, IconRobot } from '@tabler/icons-react';
+import { IconSend, IconMoodSmile, IconRobot, IconMicrophone } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
+import { useWhisper } from '@chengsokdara/use-whisper';
 
 export default function App() {
   const bottomRef = useRef(null);
@@ -114,6 +115,35 @@ export default function App() {
     bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [messageState]);
 
+  const {
+    recording,
+    speaking,
+    transcribing,
+    transcript,
+    pauseRecording,
+    startRecording,
+    stopRecording
+  } = useWhisper({
+    apiKey: process.env.OPENAI_API_KEY,
+    streaming: true,
+    timeSlice: 500, // 500ms intervals
+    removeSilence: true, // remove silence
+    nonStop: true, // keep recording as long as user is speaking
+    stopTimeout: 3000, // auto stop after 3 seconds
+    whisperConfig: {
+      language: 'en'
+    }
+  });
+
+  const turnOnMicrophone = () => {
+    setPromptInput('');
+    startRecording();
+  }
+
+  useEffect(() => {
+    setPromptInput(transcript.text || '');
+  }, [transcript.text]);
+
   return (
     <MantineProvider
       withGlobalStyles
@@ -139,6 +169,15 @@ export default function App() {
       }}
     >
       <Container size="md" py="xl" className="app-container">
+        {/* <div>
+          <p>Recording: {recording}</p>
+          <p>Speaking: {speaking}</p>
+          <p>Transcribing: {transcribing}</p>
+          <p>Transcribed Text: {transcript.text}</p>
+          <button onClick={turnOnMicrophone}>Start</button>
+          <button onClick={() => pauseRecording()}>Pause</button>
+          <button onClick={() => stopRecording()}>Stop</button>
+        </div> */}
         <Card shadow="md" radius="md" p="0" className="app-card" withBorder>
           <Flex direction="column" className="chat-container">
             <ScrollArea className="chat-content" px="xl">
@@ -187,25 +226,33 @@ export default function App() {
               <div ref={bottomRef} />
             </ScrollArea>
 
-            <Container ref={focusTrapRef} p="md" className="chat-input">
+            <Flex ref={focusTrapRef} p="md" className="chat-input" align="center">
               <Textarea
+                className="chat-input-textarea"
                 autosize
                 data-autofocus
                 size="lg"
                 maxRows={8}
-                placeholder="Enter your prompt here..."
+                placeholder={(recording) ? "Listening..." : "Enter your prompt here..."}
                 rightSection={
-                  (isLoading)
-                    ? <Loader />
-                    : <ActionIcon variant="subtle" size="md" onClick={handlePromptInputSubmit}>
-                        <IconSend />
-                      </ActionIcon>
+                  <ActionIcon variant="subtle" size="md" onClick={turnOnMicrophone}>
+                    <IconMicrophone />
+                  </ActionIcon>
                 }
                 value={promptInput}
                 onChange={(e) => setPromptInput(e.currentTarget.value)}
                 onKeyDown={handleEnter}
               />
-            </Container>
+              <div className="chat-input-submit">
+                {
+                  (isLoading)
+                  ? <Loader />
+                  : <ActionIcon variant="subtle" size="md" onClick={handlePromptInputSubmit}>
+                      <IconSend />
+                    </ActionIcon>
+                }
+              </div>
+            </Flex>
           </Flex>
         </Card>
       </Container>

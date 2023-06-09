@@ -11,8 +11,11 @@
     "ingest": "tsx -r dotenv/config scripts/ingest.ts"
   },
   "dependencies": {
+    "@chengsokdara/use-whisper": "^0.2.0",
     "@emotion/react": "^11.11.0",
     "@emotion/server": "^11.11.0",
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
     "@mantine/core": "^6.0.13",
     "@mantine/hooks": "^6.0.13",
     "@mantine/next": "^6.0.13",
