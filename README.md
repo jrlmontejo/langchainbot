@@ -7,7 +7,7 @@ Install dependencies:
 yarn
 ```
 
-Create an `.env` file `.env.example` and update the environment variables:
+Create an `.env` file from `.env.example` and update the environment variables:
 ```
 OPENAI_API_KEY=
 
