@@ -1,6 +1,7 @@
 import { OpenAI } from 'langchain/llms/openai';
 import { PineconeStore } from 'langchain/vectorstores/pinecone';
 import { ConversationalRetrievalQAChain } from 'langchain/chains';
+import { BufferMemory } from "langchain/memory";
 
 const CONDENSE_PROMPT = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 
@@ -30,8 +31,15 @@ export const makeChain = (vectorstore: PineconeStore) => {
     {
       qaTemplate: QA_PROMPT,
       questionGeneratorTemplate: CONDENSE_PROMPT,
-      returnSourceDocuments: true
+      returnSourceDocuments: true,
+      memory: new BufferMemory({
+        memoryKey: 'chat_history',
+        inputKey: 'question',
+        outputKey: 'text',
+        returnMessages: true
+      })
     },
   );
+
   return chain;
 };

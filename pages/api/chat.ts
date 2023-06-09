@@ -8,7 +8,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { question, history } = req.body;
+  const { question } = req.body;
 
   console.log('question', question);
 
@@ -41,10 +41,9 @@ export default async function handler(
     // create chain
     const chain = makeChain(vectorStore);
 
-    // ask a question using chat history
+    // ask a question
     const response = await chain.call({
-      question: sanitizedQuestion,
-      chat_history: history || [],
+      question: sanitizedQuestion
     });
 
     console.log('response', response);

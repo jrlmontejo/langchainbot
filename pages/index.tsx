@@ -14,12 +14,17 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [promptInput, setPromptInput] = useState('');
 
-  const [messageState, setMessageState] = useState({
-    messages: [],
-    history: []
+  const [messageState, setMessageState] = useState<{
+    messages: {
+      type: 'USER' | 'BOT',
+      message: string,
+      loading?: boolean
+    }[]
+  }>({
+    messages: []
   });
 
-  const { messages, history } = messageState;
+  const { messages } = messageState;
 
   const handlePromptInputSubmit = async (e: any) => {
     e.preventDefault();
@@ -37,7 +42,6 @@ export default function App() {
     setIsLoading(true);
     setPromptInput('');
 
-    // @ts-ignore
     setMessageState((state) => ({
       ...state,
       messages: [
@@ -63,7 +67,6 @@ export default function App() {
         },
         body: JSON.stringify({
           question: prompt,
-          history
         })
       });
 
@@ -74,10 +77,9 @@ export default function App() {
         throw new Error(data.error);
       }
 
-      // @ts-ignore
       setMessageState((state) => {
         const m = state.messages.slice();
-        // @ts-ignore
+
         m[m.length - 1] = {
           type: 'BOT',
           message: data.text,
@@ -88,14 +90,9 @@ export default function App() {
           ...state,
           messages: [
             ...m
-          ],
-          history: [
-            ...state.history,
-            [prompt, data.text]
           ]
         }
       });
-      console.log('messageState', messageState);
 
       setIsLoading(false);
     } catch (error) {
@@ -174,7 +171,7 @@ export default function App() {
                       mb="lg"
                       color="orange"
                     >
-                      <LoadingOverlay visible={message.loading} overlayBlur={2} />
+                      <LoadingOverlay visible={message.loading || false} overlayBlur={2} />
                       {
                         !message.loading &&
                         <Text c="black" size="md">
